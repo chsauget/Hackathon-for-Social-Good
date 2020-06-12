@@ -1,0 +1,25 @@
+{
+    "autoscale": {
+        "min_workers": 12,
+        "max_workers": 20
+    },
+    "cluster_name": "Cache Cluster",
+    "spark_version": "6.5.x-scala2.11",
+    "spark_conf": {
+        "spark.databricks.io.cache.compression.enabled": "true",
+        "spark.databricks.io.cache.maxMetaDataCache": "10g",
+        "spark.databricks.io.cache.maxDiskUsage": "400g",
+        "spark.databricks.delta.preview.enabled": "true"
+    },
+    "node_type_id": "Standard_F16s_v2",
+    "driver_node_type_id": "Standard_L8s_v2",
+    "ssh_public_keys": [],
+    "custom_tags": {},
+    "spark_env_vars": {
+        "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+    },
+    "autotermination_minutes": 15,
+    "enable_elastic_disk": true,
+    "cluster_source": "UI",
+    "init_scripts": [],
+}
