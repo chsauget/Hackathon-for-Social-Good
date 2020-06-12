@@ -108,7 +108,7 @@ Next create the vector assembler
 from pyspark.ml.feature import VectorAssembler
 featureassembler=VectorAssembler(inputCols=[ 'date','longitude','latitude'], outputCol= 'Features')
 #create features for the test pool
-outputTest=featureassembler.transform(dsTest)
+output=featureassembler.transform(data)
 ```
 pyspark ML VectorAssembler transform our features, returning an one-hot-encoded output vector column for each input column. It is common to merge these vectors into a single feature vector.
 
