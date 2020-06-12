@@ -143,8 +143,16 @@ As cache was needed to unsure usability of the report, [configuration](clusters/
 "spark.databricks.delta.preview.enabled": "true"
 ```
 
-### Power BI access
+### Power BI usage
 
 The Power BI File is available in this repository but you are also able to check the result online here https://bit.ly/2MQsoU7. Because it will start our Databricks cluster, the first display will certainly fail, you will need to wait some minutes to retry after the cluster is ready.
 
+We chose Power BI as end user tool to allow non IT users to make their own analysis, using a user oriented language based on formulas and expression, a user can easily create complex calculations like : 
 
+```
+Avg CO2 Evol % = VAR Y_1 = CALCULATE([Avg CO2 Amount],PARALLELPERIOD('Date'[date],-1,YEAR)) 
+RETURN
+DIVIDE([Avg CO2 Amount] - Y_1,Y_1) 
+```
+
+It will be converted into a SCALA query and executed on the databricks cluster.
