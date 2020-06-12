@@ -1,2 +1,2 @@
-# Hackathon-for-Social-Good
+# Hackathon for Social Good
 Repository for the Databricks Hackathon !
