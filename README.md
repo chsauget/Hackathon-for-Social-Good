@@ -7,7 +7,7 @@ Repository for the Databricks Hackathon for Social Good !
 - Create support ressources : Azure Storage, Azure Key Vault
 - Create the Azure Key-Vault backed secret scope in the Databricks workspace [[documentation](https://docs.microsoft.com/fr-fr/azure/databricks/security/secrets/secret-scopes#create-an-azure-key-vault-backed-secret-scope)]
 - Create a Databricks cluster
-- Run [initialization notebooks](/notebooks/initialization)
+- Run [initialization notebook](/notebooks/initialization)
 
 
 ## Required librairies
@@ -29,9 +29,9 @@ Repository for the Databricks Hackathon for Social Good !
 
 ### Loading data from CDS
 
-The data are retrieve from [CDS (Climate Data Store)](https://cds.climate.copernicus.eu/cdsapp#!/home) through their API with the help of the CDS API Client in python.
+The data are retrieved from [Copernicus CDS (Climate Data Store)](https://cds.climate.copernicus.eu/cdsapp#!/home) through their REST API with the help of the CDS API Client in Python.
 
-Because of the large number of dataset we planned to use we dedicated [a parametrized notebook](notebooks/1-data-preparation/Retrieve%20Data%20From%20CDS.py) to the task of retrieving the data from CDS. This way we standardized the download and extract from zip steps and the folder organization.
+Because of the large number of datasets, we used [a parametrized notebook](notebooks/1-data-preparation/Retrieve%20Data%20From%20CDS.py) to extract data from CDS. This way, we standardized the download and extraction.
 
 ```python
 dbutils.notebook.run("Retrieve Data From CDS"
@@ -58,13 +58,13 @@ dbutils.notebook.run("Retrieve Data From CDS"
         )
 ```
 
-This way we are also able to avoid some limitation of the API and when needed iterate over month, or axes easily.
+We were also able to avoid some limitations of the API and, when needed, easily iterate over months or axes .
 
 ### Converting files to Parquet
 
-The retrieved files from Copernicus are NetCDF and GRIB files, as their are multidimensionnal files and not directly supported by spark, we choose to convert them to parquet.
+The retrieved files from Copernicus are NetCDF and GRIB files, as their are multidimensionnal files and not directly supported by Apache Spark, we chose to convert them to parquet.
 
-To keep the maintenance effort and the code as atomic a possible we created a [dedicated parametrized notebook](notebooks/1-data-preparation/Convert%20NetCDF-GRIB%20to%20parquet.py). It will also allow us to parallize the conversion on multiple notebook execution using ThreadPool. Sadly the conversion will be moexecuted on the head node that's why we dedicated a specificaly [configurated cluster](clusters/bigdriver_cluster.json) to this task.
+To keep the maintenance effort and the code as atomic as possible, we created a [dedicated parametrized notebook](notebooks/1-data-preparation/Convert%20NetCDF-GRIB%20to%20parquet.py). It will allow us to parallize the conversion on multiple notebook executions using ThreadPool. Sadly the conversion will be moexecuted on the head node that's why we dedicated a specificaly [configurated cluster](clusters/bigdriver_cluster.json) to this task.
 
 The notebook should be configured with the following parameters : 
 
@@ -96,33 +96,35 @@ dbutils.notebook.run("Convert NetCDF-GRIB to parquet"
 ```
 
 ## Data prediction
-To predict Temperature an CO2 we have used a Linear Regression is a machine learning algorithm based on supervised learning to predict.
-Having a set of points like date, longitude, latitude..., the regression algorithm will model the relationship between a single feature (explanatory variable x) and a continuous valued response (target variable y). y=ax+b.
-First prepare data and drop rows with missing values
+To predict Temperature and CO2, we have used a Linear Regression which is a Machine Learning algorithm based on supervised learning.
+Having a set of points like date, longitude, latitude, the regression algorithm will model the relationship between a single feature (explanatory variable `x`) and a continuous valued response (target variable `y`) as the following formula `y = ax+b`.
+
+### Steps
+**Prepare** data and drop rows with missing values :
 ```
 data = df_consolidated.dropna() 
 exprs = [col(column).alias(column.replace(' ', '_')) for column in data.columns]
 ```
-Next create the vector assembler
+**Create** the vector assembler
 ```
 from pyspark.ml.feature import VectorAssembler
 featureassembler=VectorAssembler(inputCols=[ 'date','longitude','latitude'], outputCol= 'Features')
-#create features for the test pool
+# create features for the test pool
 output=featureassembler.transform(data)
 ```
-pyspark ML VectorAssembler transform our features, returning an one-hot-encoded output vector column for each input column. It is common to merge these vectors into a single feature vector.
+*Pyspark ML VectorAssembler* transforms our features, returning an one-hot-encoded output vector column for each input column. It is common to merge these vectors into a single feature vector.
 
-Then split data into train and test sets 
+**Split** data into train and test sets :
 ```
 train_data,test_data=finalized_data.randomSplit([0.8,0.2])
 ```
-Apply the algorithm to train the model
+**Apply** the algorithm to train the model :
 ```
 from pyspark.ml.regression import LinearRegression
 regressor= LinearRegression(featuresCol='Features',labelCol='co2Diox')
 regressor=regressor.fit(train_data)
 ```
-Interpreting the Intercept in a Regression Model
+**Interpret** the intercept in a Regression Model :
 
 ```
 regressor.coefficients
@@ -136,7 +138,7 @@ pred_results=regressor.evaluate(test_data)
 ## Self-service analysis
 
 ### Databricks database
-The self service analysis are provided through delta lake tables defined as follow.
+The self service analysis are provided through *Delta Lake* tables defined as follow :
 
 ```python
 tableName = 'satellite_carbon_dioxide'
@@ -159,19 +161,19 @@ spark.sql("CREATE TABLE %s.%s USING DELTA LOCATION '%s/%s'"%(databaseName,tableN
 #Optimize the layout of Delta Lake data
 spark.sql("OPTIMIZE SelfServiceWareHouse.satellite_carbon_dioxide ZORDER BY (admin2,admin1,city,date,co2)")
 ```
-Delta tables allow us to use the delta cache system to provide faster query time for our self service model on Power BI.
+Delta tables allow us to use the delta cache system to provide faster query time for our self service model in a Power BI report.
 
 ### Power BI Direct Query Model
 
-A data model is created in Power BI in order to materialize relationships between the databricks tables and allow interactive analysis.
+A data model is created in Power BI in order to materialize relationships between the Databricks tables and allows interactive analysis.
 
 ![RelationShips](misc/Model%20Relationships.PNG)
 
-The "Country detailed" table come directly from an [external website](https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv) in order to illustrate the ability to easily join external informations with databricks tables without the need to load them into the cluster. This hybrid model ability allow the user to go further with their analysis.
+The `Country detailed` table come directly from an [external website](https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv) in order to illustrate the ability to easily join external informations with Databricks tables, without the need to load them into the cluster. This hybrid model ability allows users to go further with their analysis.
 
 ### Spark configuration
 
-As cache was needed to unsure usability of the report, [configuration](clusters/cache_cluster.json) was applied to the cluster responsible to execute this workload.
+As cache was needed to ensure usability of the report, a specific [configuration](clusters/cache_cluster.json) was applied to the cluster responsible to execute the workload.
 
 ```
 "spark.databricks.io.cache.compression.enabled": "true",
@@ -182,14 +184,18 @@ As cache was needed to unsure usability of the report, [configuration](clusters/
 
 ### Power BI usage
 
-The Power BI File is available in this repository but you are also able to check the result online here https://bit.ly/2MQsoU7. Because it will start our Databricks cluster, the first display will certainly fail, you will need to wait some minutes to retry after the cluster is ready.
+The Power BI report file is available in this repository, but you are also able to check it online : https://bit.ly/2MQsoU7. 
 
-We chose Power BI as end user tool to allow non IT users to make their own analysis, using a user oriented language based on formulas and expression, a user can easily create complex calculations like : 
+Because it will start our Databricks cluster, the first display will certainly fail, you will need to wait some minutes to retry after the cluster is ready.
+
+We chose Power BI as end user tool to allow non IT users to make their own analysis. Using a user-oriented language based on formulas and expression, users can easily create complex calculations like : 
 
 ```
-Avg CO2 Evol % = VAR Y_1 = CALCULATE([Avg CO2 Amount],PARALLELPERIOD('Date'[date],-1,YEAR)) 
+Avg CO2 Evol % = 
+VAR Y_1 = 
+    CALCULATE([Avg CO2 Amount], PARALLELPERIOD('Date'[date], -1, YEAR)) 
 RETURN
-DIVIDE([Avg CO2 Amount] - Y_1,Y_1) 
+    DIVIDE([Avg CO2 Amount] - Y_1, Y_1) 
 ```
 
-It will be converted into a SCALA query and executed on the databricks cluster.
+To display the calculation result, Power BI will generate a SCALA query and execute it on the Databricks cluster.
