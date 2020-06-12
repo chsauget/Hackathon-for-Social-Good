@@ -1,0 +1,22 @@
+{
+    "autoscale": {
+        "min_workers": 1,
+        "max_workers": 12
+    },
+    "cluster_name": "Cluster ML",
+    "spark_version": "6.4.x-scala2.11",
+    "spark_conf": {
+        "spark.databricks.delta.preview.enabled": "true"
+    },
+    "node_type_id": "Standard_F16s",
+    "driver_node_type_id": "Standard_DS4_v2",
+    "ssh_public_keys": [],
+    "custom_tags": {},
+    "spark_env_vars": {
+        "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+    },
+    "autotermination_minutes": 54,
+    "enable_elastic_disk": true,
+    "cluster_source": "UI",
+    "init_scripts": [],
+}
