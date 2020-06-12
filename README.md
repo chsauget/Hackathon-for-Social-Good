@@ -97,7 +97,7 @@ dbutils.notebook.run("Convert NetCDF-GRIB to parquet"
 
 ## Data prediction
 To predict Temperature an CO2 we have used a Linear Regression is a machine learning algorithm based on supervised learning to predict.
-Having a set of points like date, longitude, latitude..., the regression algorithm will model the relationship between a single feature (explanatory variable x) and a continuous valued response (target variable y). y=ax+b
+Having a set of points like date, longitude, latitude..., the regression algorithm will model the relationship between a single feature (explanatory variable x) and a continuous valued response (target variable y). y=ax+b.
 First prepare data and drop rows with missing values
 ```
 data = df_consolidated.dropna() 
