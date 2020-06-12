@@ -1,5 +1,5 @@
 # Hackathon for Social Good
-Repository for the Databricks Hackathon !
+Repository for the Databricks Hackathon for Social Good !
 
 ## Installation
 
