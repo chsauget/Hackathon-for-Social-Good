@@ -27,3 +27,26 @@ Repository for the Databricks Hackathon !
 | [xarray](https://pypi.org/project/xarray/)             | PyPI   | 0.15.1         |
 
 ### Self-service analysis
+The self service analysis are provided through delta lake tables defined as follow.
+
+```python
+tableName = 'satellite_carbon_dioxide'
+
+#Read the satellites raw data
+df = sqlContext.read.parquet("/mnt/datasets/satellite-carbon-dioxide/parquet/")
+
+#Add an around 11km rounding column to unable data analysis on a geographic level on Power BI
+df = df.withColumn("geoKey",f.concat(f.format_number(df.latitude, 1),f.lit('|'),f.format_number(df.longitude, 1)))\
+        .withColumn("date",f.to_date(df.datetime))
+df = df.alias('d').join(dfGeo,df.geoKey==dfGeo.geoKey).select('d.*','g.city','g.countryCode2','g.admin1','g.admin2')
+
+#Save the data as delta files
+df.write.option("mergeSchema", "true").mode("overwrite").partitionBy('countryCode2')\
+                        .format("delta").save("%s/%s"%(databaseLocation,tableName))
+#Create a spark table
+spark.sql("DROP TABLE IF EXISTS %s.%s"%(databaseName,tableName))
+spark.sql("CREATE TABLE %s.%s USING DELTA LOCATION '%s/%s'"%(databaseName,tableName,databaseLocation,tableName))
+```
+Delta tables allow us to use the delta cache system to provide faster query time for our self service model on Power BI.
+
+
