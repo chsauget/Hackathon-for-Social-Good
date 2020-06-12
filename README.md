@@ -49,4 +49,10 @@ spark.sql("CREATE TABLE %s.%s USING DELTA LOCATION '%s/%s'"%(databaseName,tableN
 ```
 Delta tables allow us to use the delta cache system to provide faster query time for our self service model on Power BI.
 
+A data model is created in Power BI in order to materialize relationships between the databricks tables and allow interactive analysis.
+
+![RelationShips](misc/Model%20Relationships.PNG)
+
+The "Country detailed" table come directly from an [external website](https://raw.githubusercontent.com/datasets/country-codes/master/data/country-codes.csv) in order to illustrate the ability to easily join external informations with databricks tables without the need to load them into the cluster. This hybrid model ability allow the user to go further with their analysis.
+
 
