@@ -95,6 +95,43 @@ dbutils.notebook.run("Convert NetCDF-GRIB to parquet"
                 )
 ```
 
+## Data prediction
+To predict Temperature an CO2 we have used a Linear Regression is a machine learning algorithm based on supervised learning to predict.
+Having a set of points like date, longitude, latitude..., the regression algorithm will model the relationship between a single feature (explanatory variable x) and a continuous valued response (target variable y). y=ax+b
+First prepare data and drop rows with missing values
+```
+data = df_consolidated.dropna() 
+exprs = [col(column).alias(column.replace(' ', '_')) for column in data.columns]
+```
+Next create the vector assembler
+```
+from pyspark.ml.feature import VectorAssembler
+featureassembler=VectorAssembler(inputCols=[ 'date','longitude','latitude'], outputCol= 'Features')
+#create features for the test pool
+outputTest=featureassembler.transform(dsTest)
+```
+pyspark ML VectorAssembler transform our features, returning an one-hot-encoded output vector column for each input column. It is common to merge these vectors into a single feature vector.
+
+Then split data into train and test sets 
+```
+train_data,test_data=finalized_data.randomSplit([0.8,0.2])
+```
+Apply the algorithm to train the model
+```
+from pyspark.ml.regression import LinearRegression
+regressor= LinearRegression(featuresCol='Features',labelCol='co2Diox')
+regressor=regressor.fit(train_data)
+```
+Interpreting the Intercept in a Regression Model
+
+```
+regressor.coefficients
+regressor.intercept
+```
+And finally evaluate model with test data
+```
+pred_results=regressor.evaluate(test_data)
+```
 
 ## Self-service analysis
 
