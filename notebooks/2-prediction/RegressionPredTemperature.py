@@ -116,17 +116,12 @@ pred_resultsTest=regressor.evaluate(finalized_dataTest)
 
 # COMMAND ----------
 
-pred_results.predictions.show()
+#pred_results.predictions.show()
 
 # COMMAND ----------
 
 # DBTITLE 1,Predicted temperature
-
-display(pred_resultsTest.predictions.select('Features','t2mTemp'))
-
-# COMMAND ----------
-
-
+display(pred_resultsTest.predictions)
 
 # COMMAND ----------
 
@@ -156,7 +151,7 @@ import matplotlib.pyplot as plt
 
 x = outputTest.rdd.map(lambda p: p.Features[0]).collect()
 y = outputTest.rdd.map(lambda p: (p.t2mTemp)).collect()
-
+plt.axis([xmin,xmax,ymin,ymax])
 plt.style.use('classic')              
 plt.rcParams['lines.linewidth'] = 0
 fig, ax = plt.subplots()

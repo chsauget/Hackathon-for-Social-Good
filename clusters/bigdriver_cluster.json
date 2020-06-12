@@ -1,0 +1,20 @@
+{
+    "num_workers": 1,
+    "cluster_name": "Cluster With Big Driver",
+    "spark_version": "6.5.x-scala2.11",
+    "spark_conf": {
+        "spark.databricks.delta.preview.enabled": "true"
+    },
+    "node_type_id": "Standard_DS3_v2",
+    "driver_node_type_id": "Standard_DS14_v2",
+    "ssh_public_keys": [],
+    "custom_tags": {},
+    "spark_env_vars": {
+        "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+    },
+    "autotermination_minutes": 30,
+    "enable_elastic_disk": true,
+    "cluster_source": "UI",
+    "init_scripts": [],
+    "cluster_id": "0521-114422-coil19"
+}
