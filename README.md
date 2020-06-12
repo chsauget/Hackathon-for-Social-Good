@@ -143,3 +143,8 @@ As cache was needed to unsure usability of the report, [configuration](clusters/
 "spark.databricks.delta.preview.enabled": "true"
 ```
 
+### Power BI access
+
+The Power BI File is available in this repository but you are also able to check the result online here https://bit.ly/2MQsoU7. Because it will start our Databricks cluster, the first display will certainly fail, you will need to wait some minutes to retry after the cluster is ready.
+
+
