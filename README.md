@@ -9,6 +9,9 @@ Repository for the Databricks Hackathon for Social Good !
 - Create a Databricks cluster
 - Run [initialization notebook](/notebooks/initialization)
 
+## Architecture
+
+![Architecture](misc/Architecture.png)
 
 ## Required librairies
 | Librairy name                                          | Source | Stable version |
